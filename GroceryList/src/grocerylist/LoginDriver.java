@@ -11,6 +11,7 @@ public class LoginDriver {
 	private String username;
 	private String password;
 	private ResultSet myRs;
+	private boolean usernamefound = false;
 
 	public LoginDriver() {
 		try { //Try to get connection to SQL Server. Throws SQLException if connection is refused for any reason.
@@ -27,12 +28,6 @@ public class LoginDriver {
 			System.exit(1);
 		}
 		
-		try {
-			myRs = myStmt.executeQuery("SELECT password FROM users WHERE username = 'narutardboy2' ");
-		} catch (SQLException errstmt) {
-			JOptionPane.showMessageDialog(null, errstmt.getMessage());
-		}
-		
 	}
 
 	public void setUsername(String username) {
@@ -47,6 +42,49 @@ public class LoginDriver {
 		if (this.password == null)
 			return "";
 		return String.valueOf(password.hashCode());
+	}
+	
+	public boolean usernameFoundFromSQL() {
+		try {
+			myRs = myStmt.executeQuery("SELECT username FROM users WHERE username = '" + this.username + "'");
+		} catch (SQLException errstmt) {
+			JOptionPane.showMessageDialog(null, errstmt.getMessage() + "\nThere was a problem with the username provided.");
+			System.exit(1);
+		}
+		
+		try {
+			if(myRs.getString("username").equals(this.username))
+				return (usernamefound = true);
+		} catch (SQLException erruser) {
+			JOptionPane.showMessageDialog(null, erruser.getMessage() + "\nUsername not found.");
+			System.exit(1);
+		}
+		return usernamefound;
+	}
+	
+	public String getPasswordFromSQL() {
+		try {
+			myRs = myStmt.executeQuery("SELECT password FROM users WHERE username = '" + this.username + "'");
+		} catch (SQLException errstmt) {
+			JOptionPane.showMessageDialog(null, errstmt.getMessage() + "\nThere was a problem with the username provided.");
+			System.exit(1);
+		}
+		
+		try {
+			return myRs.getString("password");
+		} catch (SQLException erruser) {
+			JOptionPane.showMessageDialog(null, erruser.getMessage() + "\nCouldn't get password.");
+			System.exit(1);
+		}
+		return "";
+	}
+	
+	public boolean verifyLogin() {
+		if (usernamefound) {
+			if (this.getPasswordFromSQL().equals(this.gethashedPassword()))
+				return true;
+		}
+		return false;
 	}
 
 }
