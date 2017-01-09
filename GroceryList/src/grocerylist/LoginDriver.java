@@ -11,6 +11,7 @@ public class LoginDriver {
 	private String username;
 	private String password;
 	private ResultSet myRs;
+	private boolean bool = false;
 	public LoginDriver() {
 		try { //Try to get connection to SQL Server. Throws SQLException if connection is refused for any reason.
 			myConn = DriverManager.getConnection("jdbc:mysql://sql9.freemysqlhosting.net:3306/sql9152919", "sql9152919", "4nz4bn34zL");
@@ -36,13 +37,17 @@ public class LoginDriver {
 		this.password = password;
 	}
 
-	public String gethashedPassword() {
+	private String gethashedPassword() {
 		if (this.password == null)
 			return "";
 		return String.valueOf(password.hashCode());
 	}
 	
-	public boolean usernameFoundFromSQL() {
+	public boolean getBool() {
+		return this.bool;
+	}
+	
+	private boolean usernameFoundFromSQL() {
 		try {
 			myRs = myStmt.executeQuery("SELECT username FROM users WHERE username = '" + this.username + "'");
 		} catch (SQLException errstmt) {
@@ -51,14 +56,18 @@ public class LoginDriver {
 		}
 		
 		try {
-			while (myRs.next()) {
+			if (myRs.next()) {
 				String un = myRs.getString("username");
+				System.out.println(un);
 				if(un.equals(this.username)) {
-				}
 					return true;
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, "\nIncorrect username/password.");
 			}
 		} catch (SQLException erruser) {
 			JOptionPane.showMessageDialog(null, erruser.getMessage() + "\nUsername not found.");
+			bool = true;
 			System.exit(1);
 		}
 		return false;
@@ -89,6 +98,8 @@ public class LoginDriver {
 			String pwfromsql = this.getPasswordFromSQL();
 			if (pwfromsql.equals(this.gethashedPassword()))
 				return true;
+			else
+				JOptionPane.showMessageDialog(null, "Incorrect username/password.");
 		}
 		return false;
 	}
