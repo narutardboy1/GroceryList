@@ -11,8 +11,6 @@ public class LoginDriver {
 	private String username;
 	private String password;
 	private ResultSet myRs;
-	private boolean usernamefound = false;
-
 	public LoginDriver() {
 		try { //Try to get connection to SQL Server. Throws SQLException if connection is refused for any reason.
 			myConn = DriverManager.getConnection("jdbc:mysql://sql9.freemysqlhosting.net:3306/sql9152919", "sql9152919", "4nz4bn34zL");
@@ -53,13 +51,17 @@ public class LoginDriver {
 		}
 		
 		try {
-			if(myRs.getString("username").equals(this.username))
-				return (usernamefound = true);
+			while (myRs.next()) {
+				String un = myRs.getString("username");
+				if(un.equals(this.username)) {
+				}
+					return true;
+			}
 		} catch (SQLException erruser) {
 			JOptionPane.showMessageDialog(null, erruser.getMessage() + "\nUsername not found.");
 			System.exit(1);
 		}
-		return usernamefound;
+		return false;
 	}
 	
 	public String getPasswordFromSQL() {
@@ -71,7 +73,10 @@ public class LoginDriver {
 		}
 		
 		try {
-			return myRs.getString("password");
+			while (myRs.next()) {
+				String pw = myRs.getString("password");
+				return pw;
+			}
 		} catch (SQLException erruser) {
 			JOptionPane.showMessageDialog(null, erruser.getMessage() + "\nCouldn't get password.");
 			System.exit(1);
@@ -80,8 +85,9 @@ public class LoginDriver {
 	}
 	
 	public boolean verifyLogin() {
-		if (usernamefound) {
-			if (this.getPasswordFromSQL().equals(this.gethashedPassword()))
+		if (usernameFoundFromSQL()) {
+			String pwfromsql = this.getPasswordFromSQL();
+			if (pwfromsql.equals(this.gethashedPassword()))
 				return true;
 		}
 		return false;
